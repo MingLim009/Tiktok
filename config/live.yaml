@@ -1,0 +1,68 @@
+# ===========================================================================
+#  RAGNAR CAPITAL — Captación de leads en TikTok Live
+#  Detecta palabras clave en los comentarios y envía un DM automático.
+# ===========================================================================
+
+# Cuenta cuyos lives se van a monitorear (sin la @)
+cuenta: "ragnarcapital"
+
+# ---------------------------------------------------------------------------
+#  REGLAS: palabra clave  ->  mensaje que se envía por DM
+#  Se evalúan en orden; gana la primera que coincida.
+# ---------------------------------------------------------------------------
+reglas:
+
+  - id: interes_general
+    activa: true
+    # El comentario debe coincidir con alguna de estas. No distingue
+    # mayúsculas, tildes ni signos de puntuación.
+    palabras_clave: ["yo", "yoo", "yop", "yo!", "info", "interesado", "interesada"]
+    # exacta: true  -> el comentario debe ser EXACTAMENTE la palabra
+    #                  (evita disparar con "yo ya cambié ayer")
+    # exacta: false -> basta con que la contenga
+    exacta: true
+    plantillas:
+      # Se elige una al azar en cada envío. Esto es a propósito: mensajes
+      # idénticos en masa son lo que más rápido marca TikTok como spam.
+      - "¡Hola {nombre}! 👋 Vi tu comentario en el live. Somos Ragnar Capital, cambiamos bolivianos a soles y a dólares. ¿Qué monto tenías en mente?"
+      - "Hola {nombre} 🙌 Gracias por comentar en el live. Te ayudo con el cambio de bolivianos a soles — dime cuánto querías cambiar y te paso la tasa del momento."
+      - "¡Hey {nombre}! Te escribo por lo del live 😊 ¿Querías cotizar bolivianos a soles o a dólares?"
+
+  - id: tasa
+    activa: true
+    palabras_clave: ["tasa", "cuanto esta", "cuánto está", "precio", "cambio"]
+    exacta: false
+    plantillas:
+      - "¡Hola {nombre}! 👋 Te paso la tasa por aquí. ¿Cuánto querías cambiar y en qué dirección (bolivianos a soles, o soles a bolivianos)?"
+      - "Hola {nombre} 🙌 Con gusto te cotizo. Dime el monto y la operación y te doy la tasa del momento."
+
+  - id: dolares
+    activa: false          # activar cuando se confirmen las escalas del 2º video
+    palabras_clave: ["dolares", "dólares", "usd", "swift"]
+    exacta: false
+    plantillas:
+      - "¡Hola {nombre}! 👋 Sí manejamos dólares — tanto entregados en Perú como envíos al exterior por SWIFT. ¿Qué monto necesitabas?"
+
+# ---------------------------------------------------------------------------
+#  LÍMITES DE ENVÍO  (protección anti-bloqueo)
+#  Estos números son deliberadamente conservadores. Subirlos aumenta el
+#  riesgo de que TikTok limite o bloquee la cuenta.
+# ---------------------------------------------------------------------------
+limites:
+  dm_por_hora: 25
+  dm_por_dia: 150
+  # Espera aleatoria entre envíos, en segundos (mínimo, máximo).
+  # La aleatoriedad importa: enviar cada N segundos exactos es un patrón obvio.
+  espera_entre_dm: [35, 95]
+  # No volver a escribirle al mismo usuario si ya se le escribió hace menos de:
+  no_repetir_horas: 72
+  # Ignorar comentarios de usuarios con cuenta muy nueva o sin foto (anti-bot)
+  ignorar_sin_avatar: false
+
+# ---------------------------------------------------------------------------
+#  Qué pasa después del primer DM
+# ---------------------------------------------------------------------------
+seguimiento:
+  # Si el usuario responde, la conversación pasa al bot de DMs normal
+  # (el que usa IA con las tasas). true = recomendado.
+  entregar_al_bot_de_dms: true

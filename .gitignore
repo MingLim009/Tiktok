@@ -1,0 +1,43 @@
+# ---------------------------------------------------------------------------
+#  NUNCA se sube nada de esto: credenciales o datos de clientes.
+#  OJO: git NO admite comentarios al final de una línea de patrón.
+#  Cada comentario va en su propia línea o el patrón deja de funcionar.
+# ---------------------------------------------------------------------------
+
+# API keys
+.env
+.env.*
+!.env.example
+
+# Sesión de TikTok: equivale a la contraseña de la cuenta
+.session/
+
+# Conversaciones y datos personales de clientes
+*.sqlite3
+*.db
+
+# Paquetes de entrega (se regeneran con el script de empaquetado)
+client/
+
+# Diagnósticos y capturas: pueden mostrar datos de clientes
+diagnostico_bandeja.html
+*.png
+*.jpg
+*.jpeg
+
+# ---------------------------------------------------------------------------
+#  Temporales
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+.pytest_cache/
+logs/
+probar_check.cmd
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

@@ -1,0 +1,13 @@
+# Núcleo
+anthropic>=0.40.0
+PyYAML>=6.0.1
+python-dotenv>=1.0.1
+requests>=2.32.0
+
+# TikTok
+playwright>=1.47.0          # bandeja de DMs (automatización de navegador)
+TikTokLive>=6.1.0           # comentarios de transmisiones en vivo
+
+# Utilidades
+tenacity>=9.0.0
+tzdata>=2024.1              # zonas horarias en Windows

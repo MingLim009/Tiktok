@@ -1,0 +1,122 @@
+# ===========================================================================
+#  RAGNAR CAPITAL — Motor de tasas de cambio
+# ===========================================================================
+#  Las tasas Y los tramos por monto salen de la hoja "TASAS FINALES".
+#  Si Ragnar Capital edita la hoja, el bot la sigue: no hay que tocar
+#  este archivo para cambiar una tasa ni para mover un tramo.
+# ===========================================================================
+
+fuente: sheet_tramos
+
+sheet_tramos:
+  csv_url: "https://docs.google.com/spreadsheets/d/e/2PACX-1vTHSY4xrFGv7ERmo0rnoHHf59jjHHs2xLHGWZm9fDNxrZiSfzGPIoR5KmkDhNodT27rNn_HmLYyIrlS/pub?gid=223206065&single=true&output=csv"
+  cache_segundos: 300          # relee la hoja como máximo cada 5 minutos
+  # Títulos de los bloques, tal cual están escritos en la hoja.
+  tablas:
+    - "PEN/BOB"
+    - "BOB/PEN"
+    - "BOB/USD"
+    - "BOB/USD INTERNACIONAL"
+
+# ---------------------------------------------------------------------------
+#  Respaldo si la hoja no responde (valores del 15/08/2026, tramo más alto)
+# ---------------------------------------------------------------------------
+#  Se usa la tasa MENOS favorable de cada tabla, para no prometer de más
+#  cuando no se puede confirmar el tramo real.
+manual:
+  "BOB/PEN": 3.49
+  "PEN/BOB": 3.33
+  "BOB/USD": 12.05
+  "BOB/USD INTERNACIONAL": 12.45
+
+# ---------------------------------------------------------------------------
+#  Odoo (pendiente de accesos)
+# ---------------------------------------------------------------------------
+odoo:
+  modelo: "res.currency.rate"
+  campos: {}
+
+# ===========================================================================
+#  OPERACIONES
+# ===========================================================================
+#  `tabla`  : bloque de la hoja del que salen tasa y tramos.
+#  `modo`   : cómo se aplica la tasa.
+#               dividir     -> recibe = entrega / tasa
+#               multiplicar -> recibe = entrega * tasa
+#
+#  El intervalo de cada tabla ya viene en la moneda que ENTREGA el cliente,
+#  así que el tramo se elige directo, sin convertir a dólares.
+# ===========================================================================
+
+operaciones:
+
+  bob_a_pen:
+    activa: true
+    etiqueta: "Bolivianos → Soles"
+    descripcion: "El cliente entrega bolivianos (BOB) y recibe soles (PEN) en Perú."
+    entrega: BOB
+    recibe: PEN
+    tabla: "BOB/PEN"          # intervalos en bolivianos · tasas 3.43 – 3.49
+    modo: dividir             # soles = bolivianos / tasa
+    monto_minimo: 100
+    decimales: 2
+
+  pen_a_bob:
+    activa: true
+    etiqueta: "Soles → Bolivianos"
+    descripcion: "El cliente entrega soles (PEN) y recibe bolivianos (BOB)."
+    entrega: PEN
+    recibe: BOB
+    tabla: "PEN/BOB"          # intervalos en soles · tasas 3.33 – 3.36
+    modo: multiplicar         # bolivianos = soles * tasa
+    monto_minimo: 30
+    decimales: 2
+
+  bob_a_usd_peru:
+    activa: true
+    etiqueta: "Bolivianos → Dólares en Perú"
+    descripcion: >
+      El cliente entrega bolivianos y nosotros le pagamos dólares en Perú.
+    entrega: BOB
+    recibe: USD
+    tabla: "BOB/USD"          # intervalos en bolivianos · tasas 11.59 – 12.05
+    modo: dividir             # dólares = bolivianos / tasa
+    monto_minimo: 100
+    decimales: 2
+
+  bob_a_usd_swift:
+    activa: true
+    etiqueta: "Bolivianos → Dólares al exterior (SWIFT)"
+    descripcion: "Envío de dólares al extranjero por código SWIFT."
+    entrega: BOB
+    recibe: USD
+    tabla: "BOB/USD INTERNACIONAL"   # intervalos en bolivianos · 11.59 – 12.45
+    modo: dividir
+    monto_minimo: 100
+    decimales: 2
+
+# ===========================================================================
+#  NOTA DE CONVENCIÓN — confirmada con la hoja "TASAS FINALES"
+# ===========================================================================
+#  El nombre de cada tabla se lee como "de la primera moneda a la segunda",
+#  desde el punto de vista del CLIENTE, y el intervalo lo confirma:
+#
+#    BOB/PEN  → "Intervalos en Bolivianos" → el cliente entrega bolivianos
+#    PEN/BOB  → "Intervalo en soles"       → el cliente entrega soles
+#
+#  ⚠️ Ojo: en la hoja ANTERIOR las columnas RC. BOB/PEN y RC. PEN/BOB estaban
+#  etiquetadas al revés de ésta. Por eso no se deben mezclar las dos hojas.
+#
+#  Comprobación con la hoja del 15/08/2026:
+#    1 000 BOB → 287.36 PEN   (tasa 3.48, tramo 584–1155 Bs)
+#    1 000 PEN → 3 330 BOB    (tasa 3.33, tramo 0–5069 soles)
+#    Ida y vuelta: 1 000 BOB → 956.90 BOB → la casa gana en ambos lados ✓
+#
+#  El test `tests/test_engine.py::test_sin_arbitraje` protege esta invariante.
+# ===========================================================================
+
+# Sólo se usa con la fuente antigua (`sheet`), que elige el tramo por USD.
+referencia_usd:
+  BOB: 11.59
+  PEN: 3.39
+  USD: 1.0
