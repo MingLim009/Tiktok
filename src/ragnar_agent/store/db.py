@@ -140,17 +140,20 @@ class Store:
         return [{"role": f["rol"], "content": f["contenido"]} for f in reversed(filas)]
 
     def ya_respondido(self, thread_id: str, contenido: str) -> bool:
-        """¿El último mensaje del cliente es idéntico al anterior ya procesado?
+        """¿Este mensaje del cliente ya se procesó antes?
 
-        Evita responder dos veces si la lectura de la bandeja se solapa.
+        Se compara contra el último mensaje DEL CLIENTE, no contra el último
+        de la conversación. Mirar el último a secas no sirve: después de
+        responder, el último es el del bot, así que el guardia nunca saltaba
+        y el mismo mensaje se contestaba en cada pasada del bucle.
         """
         with self._lock:
             fila = self._conn.execute(
-                "SELECT rol, contenido FROM mensajes WHERE thread_id = ?"
+                "SELECT contenido FROM mensajes WHERE thread_id = ? AND rol = 'user'"
                 " ORDER BY id DESC LIMIT 1",
                 (thread_id,),
             ).fetchone()
-        return bool(fila and fila["rol"] == "user" and fila["contenido"] == contenido)
+        return bool(fila and fila["contenido"] == contenido)
 
     # -- derivaciones -----------------------------------------------------
     def registrar_derivacion(

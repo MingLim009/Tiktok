@@ -77,13 +77,22 @@ class Mensaje:
     entrante: bool
 
 
-def _buscar(raiz: Any, selectores: list[str]) -> Any | None:
-    """Devuelve el primer locator que encuentre algo, o None."""
+def _buscar(raiz: Any, selectores: list[str], visible: bool = False) -> Any | None:
+    """Devuelve el primer locator que encuentre algo, o None.
+
+    Con `visible=True` exige además que el elemento se vea. Importante para
+    todo lo que se va a clickear o escribir: `count()` cuenta elementos del
+    DOM aunque estén ocultos, así que un panel de chat cerrado igual daría
+    positivo y el bot creería que puede enviar un mensaje.
+    """
     for sel in selectores:
         try:
             loc = raiz.locator(sel)
-            if loc.count() > 0:
-                return loc
+            if loc.count() == 0:
+                continue
+            if visible and not loc.first.is_visible():
+                continue
+            return loc
         except Exception:  # noqa: BLE001 - selector inválido para esta vista
             continue
     return None
@@ -189,7 +198,7 @@ class Bandeja:
 
     # -- escritura --------------------------------------------------------
     def enviar(self, texto: str) -> bool:
-        caja = _buscar(self._page, SEL_CAJA_TEXTO)
+        caja = _buscar(self._page, SEL_CAJA_TEXTO, visible=True)
         if caja is None:
             log.error(
                 "No se encontró la caja de texto. Ajusta SEL_CAJA_TEXTO en "
@@ -251,7 +260,7 @@ def abrir_chat_con(page: Any, usuario: str, timeout_ms: int = 30_000) -> Bandeja
     Falla (devolviendo None) cuando el usuario tiene los mensajes cerrados a
     desconocidos, que es un caso normal y no un error del sistema.
     """
-    usuario = (usuario or "").lstrip("@")
+    usuario = (usuario or "").strip().lstrip("@").strip()
     if not usuario:
         return None
 
@@ -266,7 +275,7 @@ def abrir_chat_con(page: Any, usuario: str, timeout_ms: int = 30_000) -> Bandeja
         log.warning("No se pudo abrir el perfil de @%s: %s", usuario, exc)
         return None
 
-    boton = _buscar(page, SEL_BOTON_MENSAJE_PERFIL)
+    boton = _buscar(page, SEL_BOTON_MENSAJE_PERFIL, visible=True)
     if boton is None:
         log.info(
             "@%s no muestra el botón de mensaje (perfil privado, mensajes "
@@ -282,8 +291,13 @@ def abrir_chat_con(page: Any, usuario: str, timeout_ms: int = 30_000) -> Bandeja
         log.warning("No se pudo abrir el chat con @%s: %s", usuario, exc)
         return None
 
-    bandeja = Bandeja(page)
-    if _buscar(page, SEL_CAJA_TEXTO) is None:
-        log.info("Se abrió el perfil de @%s pero no apareció la caja de texto.", usuario)
+    # La caja tiene que estar VISIBLE: si el panel no se abrió, el elemento
+    # puede seguir en el DOM oculto y el bot escribiría en el vacío.
+    if _buscar(page, SEL_CAJA_TEXTO, visible=True) is None:
+        log.info(
+            "Se abrió el perfil de @%s pero no apareció la caja de texto "
+            "(probablemente tiene los mensajes cerrados). Se omite.",
+            usuario,
+        )
         return None
-    return bandeja
+    return Bandeja(page)

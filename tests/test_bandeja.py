@@ -15,9 +15,10 @@ from pathlib import Path
 
 import pytest
 
-from ragnar_agent.tiktok.dm import Bandeja
+from ragnar_agent.tiktok.dm import Bandeja, abrir_chat_con
 
 FIXTURE = Path(__file__).parent / "fixtures" / "bandeja_falsa.html"
+PERFIL = Path(__file__).parent / "fixtures" / "perfil_falso.html"
 
 pytestmark = pytest.mark.skipif(
     not FIXTURE.exists(), reason="falta la bandeja de prueba"
@@ -144,3 +145,62 @@ def test_si_cambia_la_interfaz_no_revienta(pagina):
     assert vacia.mensajes() == []
     assert vacia.ultimo_entrante() is None
     assert vacia.enviar("hola") is False
+
+
+# ---------------------------------------------------------------------------
+#  Escribirle a alguien que comentó en el Live (ruta de envío de la Fase 2)
+# ---------------------------------------------------------------------------
+
+
+@pytest.fixture
+def perfil(pagina):
+    """Intercepta tiktok.com y sirve el perfil falso, para probar la función real."""
+    html = PERFIL.read_text(encoding="utf-8")
+
+    def responder(route, request):
+        # Reproduce los parámetros del caso "mensajes cerrados".
+        sin_boton = "sinboton=1" in request.url
+        cuerpo = html
+        if sin_boton:
+            cuerpo = cuerpo.replace(
+                'id="btn-mensaje" data-e2e="message-button"', 'id="btn-oculto"'
+            )
+        route.fulfill(status=200, content_type="text/html; charset=utf-8", body=cuerpo)
+
+    pagina.route("**/www.tiktok.com/**", responder)
+    yield pagina
+    pagina.unroute("**/www.tiktok.com/**")
+
+
+def test_abre_el_chat_desde_el_perfil(perfil):
+    bandeja = abrir_chat_con(perfil, "espectador_01")
+    assert bandeja is not None, "Debería haber abierto el chat"
+    assert bandeja.enviar("¡Hola! Vi tu comentario en el live 👋")
+    assert "live" in bandeja.mensajes()[-1].texto
+
+
+def test_acepta_el_usuario_con_arroba(perfil):
+    assert abrir_chat_con(perfil, "@espectador_01") is not None
+
+
+@pytest.mark.parametrize("usuario", ["", "   ", None])
+def test_sin_usuario_no_intenta_nada(perfil, usuario):
+    assert abrir_chat_con(perfil, usuario) is None
+
+
+def test_perfil_sin_boton_de_mensaje_se_saltea(pagina):
+    """Mensajes cerrados a desconocidos: es normal, no puede romper el bot."""
+    html = PERFIL.read_text(encoding="utf-8").replace(
+        'id="btn-mensaje" data-e2e="message-button"', 'id="btn-oculto"'
+    )
+
+    pagina.route(
+        "**/www.tiktok.com/**",
+        lambda route, req: route.fulfill(
+            status=200, content_type="text/html; charset=utf-8", body=html
+        ),
+    )
+    try:
+        assert abrir_chat_con(pagina, "perfil_cerrado") is None
+    finally:
+        pagina.unroute("**/www.tiktok.com/**")

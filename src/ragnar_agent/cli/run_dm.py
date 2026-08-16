@@ -61,13 +61,22 @@ def main(argv: list[str] | None = None) -> int:
             bandeja = Bandeja(page)
 
             if args.diagnostico:
+                from ..tiktok.diagnostico import informe
+
+                texto = informe(page)
+                print("\n" + texto)
+                destino = ROOT / "diagnostico_bandeja.txt"
+                destino.write_text(texto, encoding="utf-8")
+
                 sesion.guardar_captura(page, "diagnostico_bandeja")
                 bandeja.volcar_diagnostico(str(ROOT / "diagnostico_bandeja.html"))
+
                 convs = bandeja.conversaciones()
-                log.info("Conversaciones detectadas: %d", len(convs))
+                print(f"  Conversaciones detectadas: {len(convs)}")
                 for c in convs:
-                    log.info("  [%s] @%s — %r", "•" if c.no_leido else " ",
-                             c.usuario, c.preview[:60])
+                    print(f"    [{'•' if c.no_leido else ' '}] @{c.usuario} — "
+                          f"{c.preview[:60]}")
+                print(f"\n  Informe guardado en {destino}\n")
                 return 0
 
             while True:
@@ -121,7 +130,9 @@ def _ciclo(bandeja: Bandeja, agente: AgenteIA, store, limitador, enviar_real: bo
         store.agregar_mensaje(conv.thread_id, "user", entrante)
 
         respuesta = agente.responder(entrante, historial)
-        if not respuesta.texto:
+        # .strip(): una respuesta de sólo espacios es verdadera en Python y
+        # se enviaría como un mensaje en blanco al cliente.
+        if not (respuesta.texto or "").strip():
             log.warning("@%s: la IA no devolvió texto.", conv.usuario)
             continue
 
