@@ -98,14 +98,16 @@ real.
 python -m pytest tests -q
 ```
 
-77 pruebas: cotizaciones y tramos por monto, respaldo ante caída de la hoja,
+104 pruebas: cotizaciones y tramos por monto, respaldo ante caída de la hoja,
 detección de palabras clave y falsos positivos, captura de teléfono al agendar
 un Meet, y la lectura y respuesta de la bandeja contra una página local que
 imita la de TikTok (`tests/fixtures/`).
 
-Esa última tanda necesita Chromium:
+Las pruebas son herramienta de desarrollo, no hacen falta para usar el bot.
+Para correrlas:
 
 ```bash
+pip install pytest
 playwright install chromium
 ```
 

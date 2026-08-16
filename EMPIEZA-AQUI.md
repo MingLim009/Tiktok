@@ -1,97 +1,125 @@
 # Empieza aquí
 
-Hola Adderly. Esto es el agente de atención automática para TikTok.
-Esta hoja es para que veas funcionando lo principal en 2 minutos, sin
-tener que entender nada de programación.
+Hola Adderly. Esto es el agente que responde automáticamente los mensajes de
+tu bandeja de TikTok.
+
+**No necesitas saber programar ni escribir comandos.** Todo se hace con doble
+clic en los archivos que terminan en `.cmd`.
 
 ---
 
-## Lo más rápido: ver las tasas
+## Paso 1 — Preparar el programa y ver tus tasas
 
-Haz **doble clic** en:
+Doble clic en **`probar.cmd`**
 
-- **`probar.cmd`** si usas Windows
-- **`probar.sh`** si usas Mac
+La primera vez se demora un par de minutos preparándose. Es normal y pasa una
+sola vez. Cuando termine, te muestra tus tasas de hoy, leídas directamente de
+tu hoja "TASAS FINALES", con ejemplos de cotización.
 
-La primera vez se demora un par de minutos preparando todo (te va avisando
-en pantalla). Después abre una ventana negra y te muestra las tasas de hoy
-leídas de tu propio Google Sheet, con ejemplos de cotización.
-
-Si eso te aparece, el motor de tasas está funcionando correctamente.
+Si ves tus tasas ahí, el motor de cálculo está funcionando bien.
 
 ---
 
-## Conversar con el bot
+## Paso 2 — Tu clave de Claude
 
-En la misma ventana, cuando termine, escribe:
+En la carpeta hay un archivo llamado `.env.example`. Haz una copia y ponle de
+nombre `.env` (así, con el punto adelante y sin nada más).
 
-```
-python -m ragnar_agent.cli.demo
-```
+> Si Windows no te deja renombrarlo: abre el Bloc de notas, copia adentro todo
+> el contenido de `.env.example`, y usa **Archivo → Guardar como** escribiendo
+> el nombre entre comillas: `".env"`. Las comillas evitan que Windows le
+> agregue `.txt` al final.
 
-Y escríbele como si fueras un cliente tuyo:
+Ábrelo y pon tu clave en la línea que dice `ANTHROPIC_API_KEY`.
+
+---
+
+## Paso 3 — Conversar con el bot
+
+Doble clic en **`conversar-con-el-bot.cmd`**
+
+Escríbele como si fueras un cliente tuyo:
 
 - `a cuánto está el cambio?`
 - `quiero cambiar 5000 bolivianos a soles`
 - `y si son 300 mil?`
 - `hasta qué hora atienden?`
-- `me pueden llamar por teléfono?`
+- `me pueden llamar?`
 
-En la última va a pasar la conversación a un asesor. En las otras responde solo.
+En la última te va a pedir tu número de teléfono y recién ahí pasa la
+conversación a un asesor.
 
-> Para esto hace falta la clave de Claude en el archivo `.env`.
-> Lo configuramos juntos en la sesión de conexión.
+---
+
+## Paso 4 — Conectar tu cuenta de TikTok
+
+Doble clic en **`conectar-tiktok.cmd`**
+
+Se abre una ventana de navegador. Ahí inicias sesión tú mismo, con tu cuenta
+de siempre. TikTok te va a mandar un código a tu correo.
+
+Esto se hace **una sola vez**. Tu contraseña no pasa por el programa.
+
+---
+
+## Paso 5 — Ver qué respondería, sin enviar nada
+
+Doble clic en **`revisar-bandeja.cmd`**
+
+Lee tus mensajes reales y te muestra en pantalla qué le respondería a cada
+uno. **No envía nada.** Tus clientes no reciben ningún mensaje.
+
+Si algo no funciona, doble clic en **`diagnostico.cmd`** y manda el archivo
+`diagnostico_bandeja.txt` que queda en la carpeta.
+
+---
+
+## El día a día
+
+Doble clic en **`estado.cmd`**
+
+Te muestra de dónde salen las tasas hoy, cuántos mensajes se enviaron, y sobre
+todo **quiénes están esperando que un asesor los llame**, con su teléfono y el
+horario que prefieren.
 
 ---
 
 ## Lo que puedes cambiar tú mismo
 
-Todo esto se edita con el Bloc de notas, sin tocar programación.
-Guardas el archivo, reinicias el bot y ya.
+Se editan con el Bloc de notas. Guardas y listo.
 
-| Archivo | Qué cambias ahí |
-|---|---|
-| `config/negocio.yaml` | Horario, tono, preguntas frecuentes, cuándo pasar a una persona |
-| `config/tasas.yaml` | Tramos por monto, montos mínimos, de dónde salen las tasas |
-| `config/live.yaml` | Palabras clave del Live y los mensajes que se envían |
+- **`config/negocio.yaml`** — horario, tono, preguntas frecuentes, cuándo pasar
+  a una persona
+- **`config/tasas.yaml`** — montos mínimos y de dónde salen las tasas
+- **`config/live.yaml`** — palabras clave del Live y los mensajes que se envían
 
 Cada archivo está comentado en español, línea por línea.
 
-**Ejemplo** — para que el bot atienda hasta las 6 de la tarde, en
-`config/negocio.yaml` busca:
+**Ejemplo:** para atender hasta las 6 de la tarde, en `config/negocio.yaml`
+busca `cierre: "17:00"` y cámbialo por `"18:00"`.
 
-```yaml
-  cierre: "17:00"
-```
+### Las tasas se actualizan solas
 
-y cámbialo a `"18:00"`. Eso es todo.
+El bot lee tu Google Sheet cada 5 minutos. **Si tú cambias una tasa en la hoja,
+el bot ya responde con la nueva.** Nadie tiene que copiar nada a mano.
 
----
-
-## Las tasas se actualizan solas
-
-El bot lee tu Google Sheet cada 5 minutos. **Si tú actualizas la hoja, el bot
-ya responde con la tasa nueva.** Nadie tiene que copiar nada a mano.
-
-Si algún día la hoja no está disponible, usa una tasa de respaldo y lo deja
-anotado, en vez de quedarse sin responder.
+Si algún día la hoja no está disponible, usa una tasa de respaldo conservadora
+y lo deja anotado, en vez de quedarse sin responder.
 
 ---
 
 ## Si quieres profundizar
 
-| Documento | Para qué |
-|---|---|
-| `docs/INSTALACION.md` | Instalación paso a paso |
-| `docs/USO.md` | Cómo cambiar cada cosa, con ejemplos |
-| `docs/SEGURIDAD.md` | Riesgos, límites de envío y buenas prácticas |
+- **`docs/INSTALACION.md`** — instalación paso a paso
+- **`docs/USO.md`** — cómo cambiar cada cosa, con ejemplos
+- **`docs/SEGURIDAD.md`** — riesgos, límites de envío y buenas prácticas
 
 **Lee `docs/SEGURIDAD.md` antes de activar el envío real.** Explica de forma
 directa el riesgo de que TikTok limite la cuenta y cómo lo reducimos.
 
 ---
 
-## ¿Algo no funciona?
+## Si algo falla
 
-Escríbeme y lo vemos. Si la ventana negra muestra un error, mándame una
-captura de pantalla completa — con eso ubico el problema rápido.
+Manda una captura de la ventana completa, con todo lo que aparezca en ella.
+Con eso ubico el problema rápido.

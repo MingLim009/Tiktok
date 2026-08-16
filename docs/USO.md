@@ -134,18 +134,18 @@ bob_a_pen:
   monto_minimo: 100     # en bolivianos
 ```
 
-### Activar SWIFT con tasa automática
+### SWIFT
 
-Hoy el bot confirma que la operación existe y deriva a un asesor. Para
-cotizarla automáticamente, en `bob_a_usd_swift` reemplaza `solo_derivar: true`
-por una configuración como la de `bob_a_usd_peru` (columna, modo, tramos).
+Ya cotiza automático con la tabla `BOB/USD INTERNACIONAL` de la hoja. No hay
+que hacer nada: para cambiar sus tasas se editan los tramos de ese bloque,
+igual que los demás.
 
 ### Pasar de Google Sheet a Odoo
 
 Cuando estén los accesos de Odoo:
 
 1. Completa `ODOO_URL`, `ODOO_DB`, `ODOO_USERNAME` y `ODOO_API_KEY` en `.env`
-2. En `config/tasas.yaml` cambia `fuente: sheet` por `fuente: odoo`
+2. En `config/tasas.yaml` cambia `fuente: sheet_tramos` por `fuente: odoo`
 3. Completa `odoo.campos` con el modelo y campo donde viven las tasas
 
 El resto del sistema no cambia: el motor de cotización usa la misma interfaz.

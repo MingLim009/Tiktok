@@ -59,7 +59,15 @@ if errorlevel 1 (
     echo.
 )
 
-set PYTHONPATH=src
+REM  Instalar el propio proyecto. Sin esto, los comandos solo funcionan
+REM  dentro de esta ventana: al abrir otra fallan con "No module named
+REM  ragnar_agent", que para el cliente es un error incomprensible.
+python -c "import ragnar_agent" >nul 2>&1
+if errorlevel 1 (
+    python -m pip install --quiet -e . --no-deps
+    if errorlevel 1 goto sin_librerias
+)
+
 set PYTHONIOENCODING=utf-8
 set LOG_LEVEL=WARNING
 
