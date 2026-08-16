@@ -98,8 +98,16 @@ real.
 python -m pytest tests -q
 ```
 
-37 pruebas: cotizaciones, tramos por monto, respaldo ante caída de la fuente,
-detección de palabras clave y falsos positivos.
+77 pruebas: cotizaciones y tramos por monto, respaldo ante caída de la hoja,
+detección de palabras clave y falsos positivos, captura de teléfono al agendar
+un Meet, y la lectura y respuesta de la bandeja contra una página local que
+imita la de TikTok (`tests/fixtures/`).
+
+Esa última tanda necesita Chromium:
+
+```bash
+playwright install chromium
+```
 
 La prueba más importante es `test_sin_arbitraje`: verifica que un ida y vuelta
 BOB → PEN → BOB siempre devuelva menos de lo que entró. Si alguien invierte las
