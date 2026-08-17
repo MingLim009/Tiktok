@@ -74,6 +74,34 @@ Si algo no funciona, doble clic en **`diagnostico.cmd`** y manda el archivo
 
 ---
 
+## Paso 6 — Activarlo de verdad (solo cuando estés convencido)
+
+Doble clic en **`activar-bot.cmd`**
+
+Te pide que escribas `SI` para confirmar, y a partir de ahí el bot revisa
+tu bandeja cada 45 segundos y **responde de verdad** a tus clientes.
+
+Para detenerlo: cierra la ventana, o presiona `Ctrl + C`.
+
+> ⚠️ El bot solo responde mientras esa ventana esté abierta y la computadora
+> encendida. Si la apagas o se suspende, deja de responder hasta que la vuelvas
+> a abrir. Conviene revisar que la computadora no se suspenda sola durante tu
+> horario de atención.
+
+---
+
+## Cuando te avise que hay una versión nueva
+
+Doble clic en **`actualizar.cmd`**
+
+Descarga la última versión y reemplaza solo los archivos del programa.
+**No toca nada tuyo**: tu clave sigue ahí, tu sesión de TikTok sigue ahí (no
+hay que volver a iniciar sesión), y el historial tampoco se pierde.
+
+Después haz doble clic en `probar.cmd` para dejar todo listo.
+
+---
+
 ## El día a día
 
 Doble clic en **`estado.cmd`**
