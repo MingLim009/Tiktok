@@ -58,7 +58,7 @@ operaciones:
     recibe: PEN
     tabla: "BOB/PEN"          # intervalos en bolivianos · tasas 3.43 – 3.49
     modo: dividir             # soles = bolivianos / tasa
-    monto_minimo: 100
+    monto_minimo: 0           # sin mínimo: se cotiza cualquier monto
     decimales: 2
 
   pen_a_bob:
@@ -69,7 +69,7 @@ operaciones:
     recibe: BOB
     tabla: "PEN/BOB"          # intervalos en soles · tasas 3.33 – 3.36
     modo: multiplicar         # bolivianos = soles * tasa
-    monto_minimo: 30
+    monto_minimo: 0           # sin mínimo: se cotiza cualquier monto
     decimales: 2
 
   bob_a_usd_peru:
@@ -81,7 +81,7 @@ operaciones:
     recibe: USD
     tabla: "BOB/USD"          # intervalos en bolivianos · tasas 11.59 – 12.05
     modo: dividir             # dólares = bolivianos / tasa
-    monto_minimo: 100
+    monto_minimo: 0           # sin mínimo: se cotiza cualquier monto
     decimales: 2
 
   bob_a_usd_swift:
@@ -92,7 +92,11 @@ operaciones:
     recibe: USD
     tabla: "BOB/USD INTERNACIONAL"   # intervalos en bolivianos · 11.59 – 12.45
     modo: dividir
-    monto_minimo: 100
+    monto_minimo: 0
+    # Única operación con mínimo. Son 1.000 DÓLARES de los que recibe el
+    # cliente, no bolivianos de entrada: el equivalente en bolivianos cambia
+    # cada vez que se mueve la tasa, así que se valida sobre el resultado.
+    monto_minimo_recibe: 1000
     decimales: 2
 
 # ===========================================================================

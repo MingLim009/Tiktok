@@ -89,10 +89,13 @@ def test_bob_a_usd_peru(motor):
 
 
 def test_swift_ahora_cotiza_solo(motor):
-    """Antes derivaba a un asesor; la hoja nueva ya trae su tabla."""
-    c = motor.cotizar("bob_a_usd_swift", 5000)
-    assert c.tasa_aplicada == pytest.approx(12.45)
-    assert c.monto_recibe == pytest.approx(401.61, abs=0.01)
+    """Antes derivaba a un asesor; la hoja nueva ya trae su tabla.
+
+    Se usa un monto por encima del mínimo de 1.000 USD: 20 000 Bs / 11.78.
+    """
+    c = motor.cotizar("bob_a_usd_swift", 20_000)
+    assert c.tasa_aplicada == pytest.approx(11.78)
+    assert c.monto_recibe == pytest.approx(1697.79, abs=0.01)
 
 
 # -- la invariante que protege el negocio -----------------------------------
@@ -149,10 +152,85 @@ def test_el_tramo_se_nombra_en_la_moneda_que_entrega(motor):
 # -- validaciones -----------------------------------------------------------
 
 
-@pytest.mark.parametrize("monto", [0, -50, 10])
+@pytest.mark.parametrize("monto", [0, -50])
 def test_montos_invalidos(motor, monto):
     with pytest.raises(MontoInvalido):
         motor.cotizar("bob_a_pen", monto)
+
+
+# -- montos chicos: no hay minimo salvo en SWIFT ---------------------------
+
+
+@pytest.mark.parametrize(
+    "operacion,monto",
+    [("pen_a_bob", 36), ("pen_a_bob", 5), ("bob_a_pen", 10),
+     ("bob_a_pen", 1), ("bob_a_usd_peru", 50)],
+)
+def test_cotiza_montos_chicos_sin_minimo(motor, operacion, monto):
+    """El cliente reporto que 36 soles disparaba un aviso de minimo."""
+    c = motor.cotizar(operacion, monto)
+    assert c.monto_recibe > 0
+
+
+def test_los_36_soles_del_cliente(motor):
+    """Caso exacto reportado: 36 soles a bolivianos, tramo 0-5069."""
+    c = motor.cotizar("pen_a_bob", 36)
+    assert c.tasa_aplicada == pytest.approx(3.33)
+    assert c.monto_recibe == pytest.approx(119.88, abs=0.01)
+
+
+# -- SWIFT: minimo sobre lo que RECIBE el cliente --------------------------
+
+
+def test_swift_rechaza_menos_de_mil_dolares(motor):
+    # 5 000 Bs / 12.45 = 401.61 USD, por debajo del minimo
+    with pytest.raises(MontoInvalido, match="1 000 USD"):
+        motor.cotizar("bob_a_usd_swift", 5000)
+
+
+def test_swift_acepta_desde_mil_dolares(motor):
+    # 12 000 Bs / 11.92 = 1 006.71 USD
+    c = motor.cotizar("bob_a_usd_swift", 12_000)
+    assert c.monto_recibe >= 1000
+
+
+def test_swift_dice_cuantos_bolivianos_hacen_falta(motor):
+    """El mensaje tiene que ser accionable, no solo un rechazo.
+
+    Se sugieren 11 980 Bs y no 12 450: los 1.000 USD caen en el tramo de
+    11 461–17 185, cuya tasa es 11.92. Usar la tasa del monto rechazado
+    (12.45) daria una cifra mas alta de la necesaria.
+    """
+    with pytest.raises(MontoInvalido) as exc:
+        motor.cotizar("bob_a_usd_swift", 5000)
+    texto = str(exc.value)
+    assert "USD" in texto and "BOB" in texto
+    assert "11 920" in texto
+
+
+def test_el_minimo_de_swift_sigue_a_la_tasa(motor):
+    """Al ser sobre los dolares recibidos, no se desfasa si cambia la tasa."""
+    from ragnar_agent.rates.tramos import TablaTramos, Tramo
+
+    tablas = motor._proveedor.obtener().tablas
+    tablas["BOB/USD INTERNACIONAL"] = TablaTramos(
+        nombre="BOB/USD INTERNACIONAL", unidad="BOB",
+        tramos=[Tramo(desde=0, hasta=None, tasa=20.0)],
+    )
+
+    class Nuevo:
+        nombre = "test"
+
+        def obtener(self):
+            from ragnar_agent.rates.base import TasasVigentes
+            return TasasVigentes(valores={}, fuente="test", tablas=tablas)
+
+    motor._proveedor = Nuevo()
+
+    # Con la tasa al doble hacen falta el doble de bolivianos.
+    with pytest.raises(MontoInvalido):
+        motor.cotizar("bob_a_usd_swift", 15_000)      # = 750 USD
+    assert motor.cotizar("bob_a_usd_swift", 21_000).monto_recibe >= 1000
 
 
 def test_operacion_inexistente(motor):
@@ -218,3 +296,20 @@ def test_texto_legible(motor):
     c: Cotizacion = motor.cotizar("bob_a_pen", 1000)
     texto = c.texto()
     assert "BOB" in texto and "PEN" in texto and "3.48" in texto
+
+
+def test_el_equivalente_de_swift_cae_en_su_propio_tramo(motor):
+    """El monto sugerido tiene que ALCANZAR de verdad.
+
+    Con tramos, el minimo cae en un tramo distinto al del monto rechazado. Si
+    el equivalente se calculara con la tasa del rechazado, se quedaria corto y
+    el cliente volveria con una cifra que tampoco alcanza.
+    """
+    import re
+
+    with pytest.raises(MontoInvalido) as exc:
+        motor.cotizar("bob_a_usd_swift", 5000)
+
+    sugerido = float(re.search(r"unos ([\d\s]+)", str(exc.value))
+                     .group(1).replace(" ", ""))
+    assert motor.cotizar("bob_a_usd_swift", sugerido).monto_recibe >= 1000

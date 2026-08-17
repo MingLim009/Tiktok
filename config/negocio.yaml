@@ -94,8 +94,10 @@ faq:
 
   - pregunta: "¿Cuál es el monto mínimo?"
     respuesta: >
-      El mínimo referencial es de 100 USD equivalentes. Para montos menores,
-      confírmalo con un asesor.
+      Para cambios de bolivianos a soles, de soles a bolivianos y de bolivianos
+      a dólares en Perú no hay mínimo: se cotiza cualquier monto, por chico que
+      sea. El único con mínimo es el envío de dólares al exterior por SWIFT,
+      que es de 1.000 dólares.
 
   - pregunta: "¿Cómo hago la operación?"
     respuesta: >

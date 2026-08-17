@@ -194,20 +194,36 @@ def test_la_herramienta_exige_los_campos_de_contacto(construir):
 
 
 def test_monto_invalido_vuelve_como_error(construir):
-    """Un monto bajo el mínimo se devuelve como is_error para que la IA lo explique."""
+    """Un monto invalido se devuelve como is_error para que la IA lo explique."""
     agente, cliente = construir([
         respuesta("tool_use", [
             bloque_herramienta("t1", "cotizar_cambio",
-                               {"operacion": "bob_a_pen", "monto": 5}),
+                               {"operacion": "bob_a_pen", "monto": 0}),
         ]),
-        respuesta("end_turn", [bloque_texto("El mínimo es 100 Bs 😊")]),
+        respuesta("end_turn", [bloque_texto("¿Cuánto querías cambiar? 😊")]),
     ])
-    r = agente.responder("quiero cambiar 5 bolivianos")
+    r = agente.responder("quiero cambiar bolivianos")
 
     assert r.cotizaciones == []
     resultado = cliente.peticiones[1]["messages"][-1]["content"][0]
     assert resultado.get("is_error") is True
-    assert "mínimo" in resultado["content"]
+
+
+def test_los_montos_chicos_ya_no_dan_error(construir):
+    """El cliente reporto que 36 soles disparaba un aviso de minimo."""
+    agente, cliente = construir([
+        respuesta("tool_use", [
+            bloque_herramienta("t1", "cotizar_cambio",
+                               {"operacion": "pen_a_bob", "monto": 36}),
+        ]),
+        respuesta("end_turn", [bloque_texto("Son 119.88 bolivianos 🙌")]),
+    ])
+    r = agente.responder("36 soles a bolivianos")
+
+    assert len(r.cotizaciones) == 1
+    resultado = cliente.peticiones[1]["messages"][-1]["content"][0]
+    assert resultado.get("is_error") is not True
+    assert "mínimo" not in resultado["content"].lower()
 
 
 def test_swift_ahora_cotiza_sin_derivar(construir):
@@ -215,19 +231,19 @@ def test_swift_ahora_cotiza_sin_derivar(construir):
     agente, cliente = construir([
         respuesta("tool_use", [
             bloque_herramienta("t1", "cotizar_cambio",
-                               {"operacion": "bob_a_usd_swift", "monto": 5000}),
+                               {"operacion": "bob_a_usd_swift", "monto": 20000}),
         ]),
-        respuesta("end_turn", [bloque_texto("Por 5000 Bs te llegan 401.61 dólares")]),
+        respuesta("end_turn", [bloque_texto("Por 20000 Bs te llegan 1725.6 dólares")]),
     ])
     r = agente.responder("quiero mandar dolares por swift")
 
     assert r.derivar is False
     assert len(r.cotizaciones) == 1
-    assert r.cotizaciones[0]["tasa_aplicada"] == 12.45
+    assert r.cotizaciones[0]["tasa_aplicada"] == 11.59
 
     resultado = cliente.peticiones[1]["messages"][-1]["content"][0]
     assert resultado.get("is_error") is not True
-    assert "401.61" in resultado["content"]
+    assert "1725.6" in resultado["content"]
 
 
 def test_rechazo_de_la_api_deriva_a_humano(construir):

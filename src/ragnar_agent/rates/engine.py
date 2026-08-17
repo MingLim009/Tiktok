@@ -134,6 +134,7 @@ class MotorDeTasas:
         if monto <= 0:
             raise MontoInvalido("El monto tiene que ser mayor que cero.")
 
+        # Mínimo sobre lo que ENTREGA el cliente (en la moneda de origen).
         minimo = float(op.get("monto_minimo", 0) or 0)
         if minimo and monto < minimo:
             raise MontoInvalido(
@@ -177,6 +178,36 @@ class MotorDeTasas:
 
         recibe = monto / tasa if modo == "dividir" else monto * tasa
         decimales = int(op.get("decimales", 2))
+
+        # Mínimo sobre lo que RECIBE el cliente. Va aquí y no arriba porque
+        # sólo se conoce después de aplicar la tasa. Es el caso de SWIFT: el
+        # mínimo son 1.000 dólares de salida, no una cantidad de bolivianos
+        # de entrada — ese equivalente cambia cada vez que se mueve la tasa.
+        minimo_recibe = float(op.get("monto_minimo_recibe", 0) or 0)
+        if minimo_recibe and recibe < minimo_recibe:
+            # El equivalente se calcula con la tasa del tramo al que caeria ese
+            # minimo, no con la del monto rechazado: si no, se quedaria corto y
+            # el cliente volveria con una cifra que tampoco alcanza.
+            if op.get("tabla") and (tasas.tablas or {}).get(op["tabla"]):
+                tabla_min = tasas.tablas[op["tabla"]]
+                objetivo = minimo_recibe * tasa if modo == "dividir" else minimo_recibe / tasa
+                for _ in range(4):  # converge en una o dos vueltas
+                    t2 = tabla_min.buscar(objetivo).tasa
+                    nuevo = minimo_recibe * t2 if modo == "dividir" else minimo_recibe / t2
+                    if abs(nuevo - objetivo) < 0.01:
+                        break
+                    objetivo = nuevo
+                equivalente = objetivo
+            else:
+                equivalente = (
+                    minimo_recibe * tasa if modo == "dividir" else minimo_recibe / tasa
+                )
+            raise MontoInvalido(
+                f"El mínimo para {op.get('etiqueta', operacion)} es "
+                f"{_fmt(minimo_recibe)} {op['recibe']}. "
+                f"Con la tasa de hoy hacen falta unos "
+                f"{_fmt(round(equivalente, decimales))} {op['entrega']}."
+            )
 
         advertencias: list[str] = []
         if tasas.fuente == "manual":
