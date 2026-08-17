@@ -22,6 +22,7 @@ client/
 # Diagnósticos y capturas: pueden mostrar datos de clientes
 diagnostico_bandeja.html
 diagnostico_bandeja.txt
+revision-bandeja.txt
 *.png
 *.jpg
 *.jpeg

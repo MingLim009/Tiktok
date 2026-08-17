@@ -16,13 +16,16 @@ echo.
 echo ==================================================================
 echo.
 
-python -m ragnar_agent.cli.run_dm --una-vez
+python -m ragnar_agent.cli.run_dm --una-vez --informe
 if errorlevel 1 (
     echo.
     echo   [X] Algo fallo.
     echo.
     echo       Si dice que no encuentra las conversaciones, haz doble clic
     echo       en  diagnostico.cmd  y mandame el archivo que genera.
+) else (
+    echo   Mandame el archivo  revision-bandeja.txt  que quedo en esta
+    echo   misma carpeta, y te digo si esta listo para activarlo.
 )
 echo.
 pause

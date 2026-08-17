@@ -38,6 +38,9 @@ def main(argv: list[str] | None = None) -> int:
                    help="Revisa la bandeja una sola vez y termina")
     p.add_argument("--diagnostico", action="store_true",
                    help="Guarda captura y HTML de la bandeja y termina")
+    p.add_argument("--informe", action="store_true",
+                   help="Escribe en un archivo qué respondería a cada mensaje, "
+                        "para poder mandarlo por chat")
     args = p.parse_args(argv)
 
     s = get_settings()
@@ -79,8 +82,13 @@ def main(argv: list[str] | None = None) -> int:
                 print(f"\n  Informe guardado en {destino}\n")
                 return 0
 
+            informe = _Informe() if args.informe else None
             while True:
-                _ciclo(bandeja, agente, store, limitador, enviar_real)
+                _ciclo(bandeja, agente, store, limitador, enviar_real, informe)
+                if informe is not None:
+                    destino = informe.guardar(ROOT / "revision-bandeja.txt")
+                    print(f"\n  Informe guardado en {destino}")
+                    print("  Puedes mandar ese archivo por chat.\n")
                 if args.una_vez:
                     return 0
                 log.debug("Esperando %d s…", args.intervalo)
@@ -97,7 +105,65 @@ def main(argv: list[str] | None = None) -> int:
         return 0
 
 
-def _ciclo(bandeja: Bandeja, agente: AgenteIA, store, limitador, enviar_real: bool):
+class _Informe:
+    """Junta lo que el bot respondería, en un archivo mandable por chat.
+
+    Una captura de pantalla de la terminal se corta, se lee mal y pierde el
+    texto. Un archivo se manda tal cual y se puede leer completo.
+    """
+
+    def __init__(self) -> None:
+        self._casos: list[str] = []
+
+    def agregar(self, usuario: str, entrante: str, respuesta) -> None:
+        bloque = [
+            "-" * 66,
+            f"CLIENTE  @{usuario}",
+            f"  escribió: {entrante}",
+            "",
+            f"  el bot respondería: {respuesta.texto}",
+        ]
+        for cot in respuesta.cotizaciones:
+            bloque.append(
+                f"  · cotizó {cot['entrega']} → {cot['recibe']} "
+                f"(tasa {cot['tasa_aplicada']}, tramo {cot['tramo']})"
+            )
+        if respuesta.derivar:
+            bloque.append(
+                f"  · PASARÍA A UN ASESOR — motivo: {respuesta.motivo}"
+                + (f" · teléfono: {respuesta.telefono}" if respuesta.telefono else "")
+            )
+        self._casos.append("\n".join(bloque))
+
+    def guardar(self, destino: Path) -> Path:
+        from datetime import datetime
+
+        cabecera = [
+            "=" * 66,
+            "  REVISIÓN DE LA BANDEJA — MODO PRUEBA",
+            "=" * 66,
+            f"  Generado: {datetime.now():%d/%m/%Y %H:%M}",
+            "",
+            "  Esto es lo que el bot HABRÍA respondido. No se envió nada:",
+            "  ningún cliente recibió estos mensajes.",
+            "",
+        ]
+        cuerpo = self._casos or ["  (no había mensajes nuevos sin responder)"]
+        cierre = [
+            "",
+            "-" * 66,
+            "  Si las respuestas te parecen bien, avísame y activamos el envío.",
+            "  Si quieres cambiar el tono o alguna respuesta, dime cuál y lo ajusto.",
+            "",
+        ]
+        destino.write_text(
+            "\n".join(cabecera + cuerpo + cierre), encoding="utf-8"
+        )
+        return destino
+
+
+def _ciclo(bandeja: Bandeja, agente: AgenteIA, store, limitador,
+           enviar_real: bool, informe: "_Informe | None" = None):
     conversaciones = bandeja.conversaciones()
     pendientes = [c for c in conversaciones if c.no_leido]
 
@@ -137,6 +203,8 @@ def _ciclo(bandeja: Bandeja, agente: AgenteIA, store, limitador, enviar_real: bo
             continue
 
         log.info("→ respuesta: %r", respuesta.texto[:200])
+        if informe is not None:
+            informe.agregar(conv.usuario, entrante, respuesta)
         for cot in respuesta.cotizaciones:
             log.info("   cotización usada: %s → %s (tasa %s)",
                      cot["entrega"], cot["recibe"], cot["tasa_aplicada"])
