@@ -8,15 +8,43 @@ echo "  AGENTE DE TIKTOK - RAGNAR CAPITAL"
 echo "=================================================================="
 echo
 
-if command -v python3 >/dev/null 2>&1; then
-    PY=python3
-elif command -v python >/dev/null 2>&1; then
-    PY=python
-else
-    echo "  [X] No se encontro Python en esta Mac."
+# OJO: no basta con que python3 EXISTA. macOS trae un stub en /usr/bin/python3
+# que aparece como instalado pero, si faltan las Command Line Tools, al
+# ejecutarlo abre un dialogo y no hace nada. Por eso se comprueba que de
+# verdad corra, no que este presente.
+PY=""
+for candidato in python3 python; do
+    if command -v "$candidato" >/dev/null 2>&1; then
+        if "$candidato" -c "print('ok')" >/dev/null 2>&1; then
+            PY="$candidato"
+            break
+        fi
+    fi
+done
+
+if [ -z "$PY" ]; then
+    echo "  [X] Falta Python en esta Mac, o esta a medio instalar."
     echo
-    echo "      Descargalo de https://www.python.org/downloads/"
-    echo "      Instalalo y vuelve a abrir este archivo."
+    echo "  ES NORMAL: muchas Mac no lo traen listo para usar."
+    echo
+    echo "  Tienes dos opciones. La primera es la mas simple:"
+    echo
+    echo "  OPCION 1 - Descargarlo (recomendada)"
+    echo "     1. Entra a  https://www.python.org/downloads/"
+    echo "     2. Pulsa el boton amarillo grande que dice"
+    echo "        'Download Python' "
+    echo "     3. Abre el archivo descargado y sigue el instalador"
+    echo "        dandole a Continuar en todo"
+    echo "     4. Cuando termine, vuelve a abrir este mismo archivo"
+    echo
+    echo "  OPCION 2 - Dejar que macOS lo instale"
+    echo "     Se te habra abierto una ventana preguntando si quieres"
+    echo "     instalar las herramientas para desarrolladores. Dale a"
+    echo "     'Instalar', espera a que termine, y vuelve a abrir este"
+    echo "     archivo."
+    echo
+    echo "  Si te complica, abre  Ayuda.command  y mandame lo que salga:"
+    echo "  con eso te digo exactamente que hacer."
     echo
     read -r -p "  Presiona ENTER para cerrar... "
     exit 1
