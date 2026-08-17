@@ -1,0 +1,23 @@
+# ---------------------------------------------------------------------------
+#  Finales de linea. Esto no es cosmetico:
+#
+#  Un archivo .command o .sh con finales de linea de Windows (CRLF) FALLA en
+#  Mac con "bad interpreter: No such file or directory", que es un error
+#  incomprensible para quien solo hizo doble clic.
+#
+#  Los .cmd de Windows, al contrario, quieren CRLF.
+# ---------------------------------------------------------------------------
+
+*                text=auto eol=lf
+
+*.command        text eol=lf
+*.sh             text eol=lf
+*.py             text eol=lf
+*.yaml           text eol=lf
+*.md             text eol=lf
+
+*.cmd            text eol=crlf
+
+*.png            binary
+*.jpg            binary
+*.zip            binary
