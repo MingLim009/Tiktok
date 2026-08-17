@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Probar el bot · Ragnar Capital</title>
+<style>
+  :root {
+    --bg:#F5F7F6; --panel:#FFFFFF; --ink:#141A18; --suave:#5D6B66;
+    --linea:#DDE3E0; --verde:#136B53; --verde-claro:#E4EFEA;
+    --ambar:#8A5A12; --ambar-claro:#F8EFDC;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#0F1412; --panel:#161D1A; --ink:#E7EDEA; --suave:#93A29C;
+      --linea:#27312D; --verde:#4FBF9A; --verde-claro:#14302A;
+      --ambar:#D9A857; --ambar-claro:#2C2517;
+    }
+  }
+  * { box-sizing:border-box; }
+  html, body { height:100%; }
+  body {
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",sans-serif;
+    display:flex; flex-direction:column; height:100dvh;
+  }
+  header {
+    background:var(--panel); border-bottom:1px solid var(--linea);
+    padding:14px 18px; display:flex; align-items:center; gap:12px;
+    flex-wrap:wrap;
+  }
+  header h1 { font-size:17px; margin:0; letter-spacing:-.01em; }
+  header .sub { font-size:13px; color:var(--suave); }
+  .pill {
+    margin-left:auto; font-size:12px; font-family:var(--mono);
+    background:var(--verde-claro); color:var(--verde);
+    padding:4px 10px; border-radius:20px; white-space:nowrap;
+  }
+  #aviso {
+    background:var(--ambar-claro); color:var(--ambar);
+    border-bottom:1px solid var(--linea);
+    padding:9px 18px; font-size:13px; line-height:1.5;
+  }
+  #chat {
+    flex:1; overflow-y:auto; padding:20px 18px;
+    display:flex; flex-direction:column; gap:12px;
+  }
+  .fila { display:flex; }
+  .fila.yo { justify-content:flex-end; }
+  .burbuja {
+    max-width:min(78%, 560px); padding:11px 15px; border-radius:16px;
+    font-size:15.5px; line-height:1.55; white-space:pre-wrap;
+    word-wrap:break-word;
+  }
+  .yo .burbuja { background:var(--verde); color:#fff; border-bottom-right-radius:5px; }
+  .bot .burbuja {
+    background:var(--panel); border:1px solid var(--linea);
+    border-bottom-left-radius:5px;
+  }
+  .meta {
+    font-family:var(--mono); font-size:11.5px; color:var(--suave);
+    margin:5px 0 0 6px;
+  }
+  .meta.derivado { color:var(--ambar); }
+  .escribiendo { color:var(--suave); font-size:14px; padding-left:6px; }
+  footer {
+    background:var(--panel); border-top:1px solid var(--linea);
+    padding:12px 14px;
+  }
+  form { display:flex; gap:9px; max-width:900px; margin:0 auto; }
+  input[type=text] {
+    flex:1; border:1px solid var(--linea); border-radius:22px;
+    padding:12px 17px; font-size:16px; background:var(--bg); color:var(--ink);
+  }
+  input[type=text]:focus { outline:2px solid var(--verde); outline-offset:1px; }
+  button {
+    border:0; background:var(--verde); color:#fff; border-radius:22px;
+    padding:0 22px; font-size:15px; font-weight:600; cursor:pointer;
+  }
+  button:disabled { opacity:.5; cursor:default; }
+  .sugerencias {
+    display:flex; gap:7px; flex-wrap:wrap;
+    max-width:900px; margin:0 auto 10px;
+  }
+  .sug {
+    background:var(--panel); border:1px solid var(--linea); color:var(--suave);
+    border-radius:16px; padding:6px 12px; font-size:13px; cursor:pointer;
+  }
+  .sug:hover { border-color:var(--verde); color:var(--verde); }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Probar el bot</h1>
+    <div class="sub">Escríbele como si fueras un cliente de Ragnar Capital</div>
+  </div>
+  <span class="pill" id="estado">conectando…</span>
+</header>
+
+<div id="aviso">
+  Esto es solo para revisar las respuestas. <strong>No está conectado a tu
+  TikTok</strong> y ningún cliente tuyo recibe nada de lo que se escriba aquí.
+</div>
+
+<div id="chat"></div>
+
+<footer>
+  <div class="sugerencias" id="sugerencias"></div>
+  <form id="form" autocomplete="off">
+    <input type="text" id="texto" placeholder="Escribe aquí…" autofocus>
+    <button id="enviar" type="submit">Enviar</button>
+  </form>
+</footer>
+
+<script>
+const chat = document.getElementById("chat");
+const form = document.getElementById("form");
+const texto = document.getElementById("texto");
+const enviar = document.getElementById("enviar");
+const estado = document.getElementById("estado");
+
+const SUGERENCIAS = [
+  "a cuánto está el cambio?",
+  "quiero cambiar 5000 bolivianos a soles",
+  "tienen oficina física?",
+  "necesito enviar 5000 dólares a España",
+  "me pueden llamar?",
+];
+
+const sug = document.getElementById("sugerencias");
+SUGERENCIAS.forEach(s => {
+  const b = document.createElement("button");
+  b.type = "button"; b.className = "sug"; b.textContent = s;
+  b.onclick = () => { texto.value = s; texto.focus(); };
+  sug.appendChild(b);
+});
+
+function burbuja(quien, contenido) {
+  const fila = document.createElement("div");
+  fila.className = "fila " + quien;
+  const b = document.createElement("div");
+  b.className = "burbuja";
+  b.textContent = contenido;
+  fila.appendChild(b);
+  chat.appendChild(fila);
+  chat.scrollTop = chat.scrollHeight;
+  return fila;
+}
+
+function meta(texto, clase) {
+  const d = document.createElement("div");
+  d.className = "meta " + (clase || "");
+  d.textContent = texto;
+  chat.appendChild(d);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+async function enviarMensaje(mensaje) {
+  burbuja("yo", mensaje);
+  enviar.disabled = true;
+  const pensando = document.createElement("div");
+  pensando.className = "escribiendo";
+  pensando.textContent = "escribiendo…";
+  chat.appendChild(pensando);
+  chat.scrollTop = chat.scrollHeight;
+
+  try {
+    const r = await fetch("api/mensaje", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({mensaje}),
+    });
+    pensando.remove();
+    const d = await r.json();
+
+    if (d.error) {
+      burbuja("bot", "⚠️ " + d.error);
+    } else {
+      burbuja("bot", d.texto);
+      (d.cotizaciones || []).forEach(c =>
+        meta(`${c.entrega} → ${c.recibe} · tasa ${c.tasa_aplicada} · ${c.tramo}`));
+      if (d.derivar) {
+        let t = "⚑ pasaría a un asesor · motivo: " + d.motivo;
+        if (d.telefono) t += " · teléfono: " + d.telefono;
+        meta(t, "derivado");
+      }
+    }
+  } catch (e) {
+    pensando.remove();
+    burbuja("bot", "⚠️ Se perdió la conexión. Puede que el servidor se haya apagado.");
+  }
+  enviar.disabled = false;
+  texto.focus();
+}
+
+form.onsubmit = e => {
+  e.preventDefault();
+  const m = texto.value.trim();
+  if (!m) return;
+  texto.value = "";
+  enviarMensaje(m);
+};
+
+fetch("api/estado").then(r => r.json()).then(d => {
+  estado.textContent = d.tasas
+    ? `tasas del ${d.fecha || "día"} · ${d.fuente}`
+    : "sin tasas";
+}).catch(() => estado.textContent = "sin conexión");
+</script>
+</body>
+</html>

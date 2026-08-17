@@ -23,7 +23,16 @@ MARCADOR = "REEMPLAZAR"
 
 
 def clave_actual() -> str:
-    """La clave que hay en .env, o cadena vacía si no hay ninguna válida."""
+    """La clave configurada, o cadena vacía si no hay ninguna válida.
+
+    Se mira primero la variable de entorno: es la que tiene prioridad al
+    cargar la configuración, así que ignorarla haría que a alguien que la
+    tiene puesta se le siguiera pidiendo la clave una y otra vez.
+    """
+    del_entorno = (os.environ.get("ANTHROPIC_API_KEY") or "").strip()
+    if del_entorno and MARCADOR not in del_entorno:
+        return del_entorno
+
     if not DESTINO.exists():
         return ""
     for linea in DESTINO.read_text(encoding="utf-8", errors="ignore").splitlines():
