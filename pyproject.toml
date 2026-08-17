@@ -6,7 +6,10 @@ build-backend = "setuptools.build_meta"
 name = "ragnar-agent"
 version = "0.1.0"
 description = "Agente de IA para atencion al cliente en TikTok (DMs + Live) - Ragnar Capital"
-requires-python = ">=3.10"
+# 3.9 es el que trae macOS de fabrica. El codigo no usa nada posterior
+# (verificado con vermin), asi que exigir mas obligaria al cliente a
+# instalar otro Python sin ninguna necesidad.
+requires-python = ">=3.9"
 
 [tool.setuptools.packages.find]
 where = ["src"]
