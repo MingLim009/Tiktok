@@ -234,9 +234,23 @@ def test_bandeja_vacia_no_revienta(store, limitador):
     bandeja = BandejaFalsa(convs=[], entrantes={})
     agente = AgenteFalso(Respuesta(texto="x"))
 
-    _ciclo(bandeja, agente, store, limitador, enviar_real=True)
+    encontradas = _ciclo(bandeja, agente, store, limitador, enviar_real=True)
 
     assert bandeja.enviados == []
+    assert encontradas == 0, (
+        "Debe informar que no vio conversaciones, para disparar el "
+        "diagnóstico automático sin otro ida y vuelta"
+    )
+
+
+def test_devuelve_cuantas_conversaciones_vio(store, limitador):
+    bandeja = BandejaFalsa(
+        convs=[conv("ana", True, 0), conv("luis", False, 1)],
+        entrantes={"ana": "hola"},
+    )
+    agente = AgenteFalso(Respuesta(texto="respuesta"))
+
+    assert _ciclo(bandeja, agente, store, limitador, enviar_real=True) == 2
 
 
 # -- límites ----------------------------------------------------------------

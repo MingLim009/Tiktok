@@ -84,7 +84,19 @@ def main(argv: list[str] | None = None) -> int:
 
             informe = _Informe() if args.informe else None
             while True:
-                _ciclo(bandeja, agente, store, limitador, enviar_real, informe)
+                encontradas = _ciclo(
+                    bandeja, agente, store, limitador, enviar_real, informe
+                )
+
+                # Si no se vio ninguna conversación, lo más probable es que
+                # TikTok haya cambiado la interfaz. Se genera el diagnóstico
+                # solo: obligarlo a correr otro programa y mandar otro archivo
+                # cuesta un ida y vuelta entero.
+                if not encontradas:
+                    _auto_diagnostico(sesion, page, bandeja)
+                    if args.una_vez:
+                        return 4
+
                 if informe is not None:
                     destino = informe.guardar(ROOT / "revision-bandeja.txt")
                     print(f"\n  Informe guardado en {destino}")
@@ -103,6 +115,36 @@ def main(argv: list[str] | None = None) -> int:
     except KeyboardInterrupt:
         log.info("Detenido por el usuario.")
         return 0
+
+
+def _auto_diagnostico(sesion, page, bandeja: Bandeja) -> None:
+    """Genera el diagnóstico sin que el cliente tenga que pedirlo."""
+    from ..tiktok.diagnostico import informe as informe_diag
+
+    destino = ROOT / "diagnostico_bandeja.txt"
+    try:
+        texto = informe_diag(page)
+        destino.write_text(texto, encoding="utf-8")
+        sesion.guardar_captura(page, "diagnostico_bandeja")
+        bandeja.volcar_diagnostico(str(ROOT / "diagnostico_bandeja.html"))
+    except Exception as exc:  # noqa: BLE001 - el diagnóstico no debe fallar solo
+        log.warning("No se pudo generar el diagnóstico completo: %s", exc)
+        return
+
+    print()
+    print("=" * 66)
+    print("  NO SE PUDO LEER LA BANDEJA")
+    print("=" * 66)
+    print("  Es lo que pasa cuando TikTok cambia el diseño de su bandeja.")
+    print("  No hiciste nada mal y no hay que reinstalar nada.")
+    print()
+    print("  Ya se generó lo necesario para arreglarlo. Manda este archivo:")
+    print()
+    print(f"      {destino.name}")
+    print()
+    print(f"  Está en esta carpeta: {destino.parent}")
+    print("=" * 66)
+    print()
 
 
 class _Informe:
@@ -169,7 +211,7 @@ def _ciclo(bandeja: Bandeja, agente: AgenteIA, store, limitador,
 
     if not conversaciones:
         log.warning("No se detectó ninguna conversación en la bandeja.")
-        return
+        return 0
     log.info("%d conversaciones · %d sin leer", len(conversaciones), len(pendientes))
 
     for conv in pendientes:
@@ -240,6 +282,8 @@ def _ciclo(bandeja: Bandeja, agente: AgenteIA, store, limitador,
             log.info("   ✓ enviado (%s)", limitador.resumen())
         else:
             log.error("   ✗ no se pudo enviar a @%s", conv.usuario)
+
+    return len(conversaciones)
 
 
 if __name__ == "__main__":
