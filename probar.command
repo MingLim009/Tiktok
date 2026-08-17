@@ -65,25 +65,9 @@ python -m playwright install chromium >/dev/null 2>&1
 export PYTHONIOENCODING=utf-8
 export LOG_LEVEL=WARNING
 
-# Crear el .env por el cliente: en Mac el Finder oculta los archivos que
-# empiezan con punto, asi que crearlo a mano es justo donde se traba.
-if [ ! -f ".env" ] && [ -f ".env.example" ]; then
-    cp ".env.example" ".env"
-    echo
-    echo "  Se creo el archivo de configuracion (.env)."
-    echo "  Se va a abrir para que pegues tu clave de Claude en la linea"
-    echo "  que dice ANTHROPIC_API_KEY. Guarda y cierra."
-    echo
-    read -r -p "  Presiona ENTER para abrirlo... "
-    if command -v open >/dev/null 2>&1; then
-        open -e ".env"
-    elif command -v xdg-open >/dev/null 2>&1; then
-        xdg-open ".env" >/dev/null 2>&1
-    else
-        echo "  Abrelo con cualquier editor de texto: $(pwd)/.env"
-    fi
-    echo
-fi
+# La clave se pide aca mismo, en esta ventana. Hacerle editar un archivo
+# oculto no funciona: el Finder no lo muestra.
+python -m ragnar_agent.cli.configurar
 
 echo
 echo "  Consultando tus tasas de hoy..."

@@ -71,21 +71,9 @@ if errorlevel 1 (
 set PYTHONIOENCODING=utf-8
 set LOG_LEVEL=WARNING
 
-REM  Crear el .env por el cliente: renombrar a ".env" en Windows es donde
-REM  mas se traba, porque el Explorador le agrega .txt sin avisar.
-if not exist ".env" (
-    if exist ".env.example" (
-        copy /y ".env.example" ".env" >nul
-        echo.
-        echo   Se creo el archivo de configuracion ^(.env^).
-        echo   Se va a abrir para que pegues tu clave de Claude en la linea
-        echo   que dice ANTHROPIC_API_KEY. Guarda y cierra.
-        echo.
-        pause
-        notepad ".env"
-        echo.
-    )
-)
+REM  La clave se pide aca mismo, en esta ventana. Renombrar un archivo a
+REM  ".env" es donde mas se traba: el Explorador le agrega .txt sin avisar.
+python -m ragnar_agent.cli.configurar
 
 echo   Consultando tus tasas de hoy...
 echo.

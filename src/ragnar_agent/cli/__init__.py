@@ -9,7 +9,18 @@ from __future__ import annotations
 
 
 def crear_agente():
-    """Devuelve el agente de IA, o None explicando en claro qué falta."""
+    """Devuelve el agente de IA, o None explicando en claro qué falta.
+
+    Si falta la clave, la pide en el momento en vez de fallar: el cliente ya
+    está en la ventana, y mandarlo a editar un archivo oculto lo traba.
+    """
+    from .configurar import asegurar_clave
+
+    # Si falta, se pide aquí mismo en vez de fallar: el cliente ya está en la
+    # ventana, y mandarlo a editar un archivo oculto es donde se traba.
+    if not asegurar_clave():
+        return None
+
     try:
         from ..ai import AgenteIA
 

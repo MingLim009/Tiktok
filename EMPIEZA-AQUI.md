@@ -48,19 +48,22 @@ Si ves tus tasas ahí, el motor de cálculo está funcionando bien.
 
 ## Paso 2 — Tu clave de Claude
 
-**No tienes que crear ningún archivo.** El paso 1 lo crea solo y te lo abre en
-un editor de texto.
-
-Cuando se abra, busca la línea que dice `ANTHROPIC_API_KEY` y pega tu clave ahí,
-después del signo `=`. Guarda y cierra.
-
-Te queda así:
+**No tienes que crear ni abrir ningún archivo.** El paso 1 te la pide en la
+misma ventana:
 
 ```
-ANTHROPIC_API_KEY=sk-ant-api03-...tu clave...
+  FALTA TU CLAVE DE CLAUDE
+
+  Pega tu clave y presiona ENTER:
 ```
 
-Si ya pasaste el paso 1 y no se abrió, vuelve a abrir `probar.command`.
+Copia tu clave de `console.anthropic.com` (Settings → API keys), pégala ahí con
+**Command + V** y presiona ENTER. Se guarda sola y no te la vuelve a pedir.
+
+Si te equivocas al pegarla, te avisa y te deja intentarlo otra vez.
+
+> ¿Ya pasaste el paso 1 sin poner la clave? Abre **`configurar-clave.command`**
+> y te la vuelve a pedir. Puedes abrirlo las veces que quieras.
 
 ---
 
