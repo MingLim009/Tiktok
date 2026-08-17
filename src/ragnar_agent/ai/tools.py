@@ -44,11 +44,22 @@ def definiciones(motor: MotorDeTasas, motivos_derivacion: list[str]) -> list[dic
                         "type": "number",
                         "description": (
                             "Monto que ENTREGA el cliente, en la moneda de origen "
-                            "de la operación (por ejemplo, bolivianos en bob_a_pen)."
+                            "de la operación (por ejemplo, bolivianos en bob_a_pen). "
+                            "Si el cliente dijo cuánto quiere RECIBIR en vez de "
+                            "cuánto entrega, usa monto_recibe en su lugar."
+                        ),
+                    },
+                    "monto_recibe": {
+                        "type": "number",
+                        "description": (
+                            "Úsalo cuando el cliente diga cuánto quiere RECIBIR. "
+                            "Ejemplo: 'necesito enviar 5000 dólares a España' son "
+                            "5000 de destino, no de origen. Manda 0 si el cliente "
+                            "indicó el monto que entrega."
                         ),
                     },
                 },
-                "required": ["operacion", "monto"],
+                "required": ["operacion", "monto", "monto_recibe"],
                 "additionalProperties": False,
             },
         },
@@ -150,7 +161,18 @@ def ejecutar(
 
 def _cotizar(args: dict, motor: MotorDeTasas) -> tuple[str, bool, dict | None]:
     operacion = args.get("operacion", "")
-    monto = args.get("monto", 0)
+    monto = float(args.get("monto") or 0)
+    monto_recibe = float(args.get("monto_recibe") or 0)
+
+    # El cliente dijo cuanto quiere RECIBIR ("enviar 5000 dolares a España"),
+    # no cuanto entrega. Se convierte a monto de origen antes de cotizar: el
+    # tramo depende del monto de entrada, asi que hay que iterar un par de
+    # veces hasta que la conversion caiga en su propio tramo.
+    if monto_recibe > 0 and monto <= 0:
+        try:
+            monto = motor.equivalente_de_entrada(operacion, monto_recibe)
+        except Exception as exc:  # noqa: BLE001
+            return str(exc), True, None
 
     try:
         cot = motor.cotizar(operacion, float(monto))

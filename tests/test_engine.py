@@ -313,3 +313,36 @@ def test_el_equivalente_de_swift_cae_en_su_propio_tramo(motor):
     sugerido = float(re.search(r"unos ([\d\s]+)", str(exc.value))
                      .group(1).replace(" ", ""))
     assert motor.cotizar("bob_a_usd_swift", sugerido).monto_recibe >= 1000
+
+
+# -- el cliente dice cuanto quiere RECIBIR ---------------------------------
+
+
+def test_equivalente_de_entrada_swift(motor):
+    """'Necesito enviar 5000 dolares a España': 5000 es el destino."""
+    entrada = motor.equivalente_de_entrada("bob_a_usd_swift", 5000)
+    recibido = motor.cotizar("bob_a_usd_swift", entrada).monto_recibe
+    assert recibido == pytest.approx(5000, abs=1.0)
+
+
+@pytest.mark.parametrize(
+    "operacion,objetivo",
+    [("bob_a_pen", 1000), ("bob_a_pen", 50), ("pen_a_bob", 10_000),
+     ("bob_a_usd_peru", 2000), ("bob_a_usd_swift", 1500)],
+)
+def test_el_equivalente_cae_en_su_propio_tramo(motor, operacion, objetivo):
+    """Sin iterar, la estimacion caeria en un tramo con otra tasa."""
+    entrada = motor.equivalente_de_entrada(operacion, objetivo)
+    recibido = motor.cotizar(operacion, entrada).monto_recibe
+    assert recibido == pytest.approx(objetivo, rel=0.005)
+
+
+def test_equivalente_rechaza_operacion_inexistente(motor):
+    with pytest.raises(OperacionDesconocida):
+        motor.equivalente_de_entrada("bob_a_euros", 100)
+
+
+@pytest.mark.parametrize("monto", [0, -100])
+def test_equivalente_rechaza_montos_invalidos(motor, monto):
+    with pytest.raises(MontoInvalido):
+        motor.equivalente_de_entrada("bob_a_pen", monto)

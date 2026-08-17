@@ -232,6 +232,40 @@ class MotorDeTasas:
             advertencias=advertencias,
         )
 
+    def equivalente_de_entrada(self, operacion: str, monto_recibe: float) -> float:
+        """Cuánto tiene que entregar el cliente para recibir `monto_recibe`.
+
+        Hace falta cuando el cliente razona al revés: "necesito enviar 5000
+        dólares a España" son 5000 de destino, no de origen.
+
+        Se itera porque el tramo depende del monto de ENTRADA: se estima con
+        una tasa, se mira en qué tramo cae esa estimación, y se recalcula con
+        la tasa de ese tramo. Converge en una o dos vueltas.
+        """
+        op = self._ops.get(operacion)
+        if op is None or not op.get("activa", True):
+            raise OperacionDesconocida(f"La operación '{operacion}' no existe.")
+        if monto_recibe <= 0:
+            raise MontoInvalido("El monto tiene que ser mayor que cero.")
+
+        modo = op.get("modo", "dividir")
+        tasas = self.tasas_crudas()
+        tabla = (tasas.tablas or {}).get(op.get("tabla", ""))
+
+        if tabla is None:
+            tasa = tasas.get(op["columna"]) if op.get("columna") else 1.0
+            return monto_recibe * tasa if modo == "dividir" else monto_recibe / tasa
+
+        estimado = monto_recibe * tabla.tramos[0].tasa if modo == "dividir" \
+            else monto_recibe / tabla.tramos[0].tasa
+        for _ in range(5):
+            tasa = tabla.buscar(estimado).tasa
+            nuevo = monto_recibe * tasa if modo == "dividir" else monto_recibe / tasa
+            if abs(nuevo - estimado) < 0.01:
+                break
+            estimado = nuevo
+        return round(estimado, int(op.get("decimales", 2)))
+
     # -- internos ---------------------------------------------------------
     def _a_usd(self, monto: float, moneda: str) -> float:
         factor = float(self._ref_usd.get(moneda, 0) or 0)
