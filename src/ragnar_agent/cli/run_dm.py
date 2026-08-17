@@ -53,7 +53,12 @@ def main(argv: list[str] | None = None) -> int:
 
     store = get_store()
     limitador = Limitador(store, config.live().get("limites", {}))
-    agente = AgenteIA()
+
+    from . import crear_agente
+
+    agente = crear_agente()
+    if agente is None:
+        return 2
 
     log.info("Modo: %s", "ENVÍO REAL" if enviar_real else "PRUEBA (no envía)")
     log.info("Límites: %s", limitador.resumen())

@@ -104,9 +104,12 @@ def mostrar_tasas() -> int:
 
 
 def chat() -> int:
-    from ..ai import AgenteIA
+    from . import crear_agente
 
-    agente = AgenteIA()
+    agente = crear_agente()
+    if agente is None:
+        return 2
+
     historial: list[dict[str, str]] = []
 
     print()
