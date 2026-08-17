@@ -4,13 +4,39 @@ Hola Adderly. Esto es el agente que responde automáticamente los mensajes de
 tu bandeja de TikTok.
 
 **No necesitas saber programar ni escribir comandos.** Todo se hace con doble
-clic en los archivos que terminan en `.cmd`.
+clic.
+
+## Primero: ¿Mac o Windows?
+
+| Si usas… | Abre los archivos que terminan en… |
+|---|---|
+| **Mac** | **`.command`** |
+| Windows | `.cmd` |
+
+Los dos hacen exactamente lo mismo. Abajo se nombran los de Mac; si usas
+Windows, es el mismo nombre cambiando `.command` por `.cmd`.
+
+### Solo la primera vez en Mac
+
+macOS bloquea los archivos descargados de internet. La primera vez que abras
+cada uno:
+
+1. **Clic derecho** sobre el archivo (o Control + clic)
+2. Elige **Abrir**
+3. Si pregunta si estás seguro, confirma **Abrir**
+
+Después de hacerlo una vez, ya funciona con doble clic normal.
+
+> Si haces doble clic directo, macOS te va a preguntar con qué programa
+> abrirlo, o te va a decir que es de un desarrollador no identificado. Eso se
+> resuelve con el clic derecho → Abrir de arriba. **No elijas ningún programa
+> de la lista.**
 
 ---
 
 ## Paso 1 — Preparar el programa y ver tus tasas
 
-Doble clic en **`probar.cmd`**
+Clic derecho → Abrir en **`probar.command`**
 
 La primera vez se demora un par de minutos preparándose. Es normal y pasa una
 sola vez. Cuando termine, te muestra tus tasas de hoy, leídas directamente de
@@ -22,21 +48,25 @@ Si ves tus tasas ahí, el motor de cálculo está funcionando bien.
 
 ## Paso 2 — Tu clave de Claude
 
-En la carpeta hay un archivo llamado `.env.example`. Haz una copia y ponle de
-nombre `.env` (así, con el punto adelante y sin nada más).
+**No tienes que crear ningún archivo.** El paso 1 lo crea solo y te lo abre en
+un editor de texto.
 
-> Si Windows no te deja renombrarlo: abre el Bloc de notas, copia adentro todo
-> el contenido de `.env.example`, y usa **Archivo → Guardar como** escribiendo
-> el nombre entre comillas: `".env"`. Las comillas evitan que Windows le
-> agregue `.txt` al final.
+Cuando se abra, busca la línea que dice `ANTHROPIC_API_KEY` y pega tu clave ahí,
+después del signo `=`. Guarda y cierra.
 
-Ábrelo y pon tu clave en la línea que dice `ANTHROPIC_API_KEY`.
+Te queda así:
+
+```
+ANTHROPIC_API_KEY=sk-ant-api03-...tu clave...
+```
+
+Si ya pasaste el paso 1 y no se abrió, vuelve a abrir `probar.command`.
 
 ---
 
 ## Paso 3 — Conversar con el bot
 
-Doble clic en **`conversar-con-el-bot.cmd`**
+Doble clic en **`conversar-con-el-bot.command`**
 
 Escríbele como si fueras un cliente tuyo:
 
@@ -53,7 +83,7 @@ conversación a un asesor.
 
 ## Paso 4 — Conectar tu cuenta de TikTok
 
-Doble clic en **`conectar-tiktok.cmd`**
+Doble clic en **`conectar-tiktok.command`**
 
 Se abre una ventana de navegador. Ahí inicias sesión tú mismo, con tu cuenta
 de siempre. TikTok te va a mandar un código a tu correo.
@@ -64,24 +94,24 @@ Esto se hace **una sola vez**. Tu contraseña no pasa por el programa.
 
 ## Paso 5 — Ver qué respondería, sin enviar nada
 
-Doble clic en **`revisar-bandeja.cmd`**
+Doble clic en **`revisar-bandeja.command`**
 
 Lee tus mensajes reales y te muestra en pantalla qué le respondería a cada
 uno. **No envía nada.** Tus clientes no reciben ningún mensaje.
 
-Si algo no funciona, doble clic en **`diagnostico.cmd`** y manda el archivo
+Si algo no funciona, doble clic en **`diagnostico.command`** y manda el archivo
 `diagnostico_bandeja.txt` que queda en la carpeta.
 
 ---
 
 ## Paso 6 — Activarlo de verdad (solo cuando estés convencido)
 
-Doble clic en **`activar-bot.cmd`**
+Doble clic en **`activar-bot.command`**
 
 Te pide que escribas `SI` para confirmar, y a partir de ahí el bot revisa
 tu bandeja cada 45 segundos y **responde de verdad** a tus clientes.
 
-Para detenerlo: cierra la ventana, o presiona `Ctrl + C`.
+Para detenerlo: cierra la ventana, o presiona `Control + C`.
 
 > ⚠️ El bot solo responde mientras esa ventana esté abierta y la computadora
 > encendida. Si la apagas o se suspende, deja de responder hasta que la vuelvas
@@ -92,19 +122,19 @@ Para detenerlo: cierra la ventana, o presiona `Ctrl + C`.
 
 ## Cuando te avise que hay una versión nueva
 
-Doble clic en **`actualizar.cmd`**
+Doble clic en **`actualizar.command`**
 
 Descarga la última versión y reemplaza solo los archivos del programa.
 **No toca nada tuyo**: tu clave sigue ahí, tu sesión de TikTok sigue ahí (no
 hay que volver a iniciar sesión), y el historial tampoco se pierde.
 
-Después haz doble clic en `probar.cmd` para dejar todo listo.
+Después abre `probar.command` para dejar todo listo.
 
 ---
 
 ## El día a día
 
-Doble clic en **`estado.cmd`**
+Doble clic en **`estado.command`**
 
 Te muestra de dónde salen las tasas hoy, cuántos mensajes se enviaron, y sobre
 todo **quiénes están esperando que un asesor los llame**, con su teléfono y el
