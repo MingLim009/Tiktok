@@ -10,7 +10,7 @@ if [ ! -f ".venv/bin/activate" ]; then
     echo
     echo "  [X] Todavia no esta preparado el programa."
     echo
-    echo "      Abre primero:  probar.command"
+    echo "      Abre primero:  1-Empezar-aqui.command"
     echo "      Eso lo deja listo. Despues vuelve a abrir este."
     echo
     read -r -p "  Presiona ENTER para cerrar... "
@@ -19,7 +19,7 @@ fi
 
 # shellcheck disable=SC1091
 source .venv/bin/activate || {
-    echo "  [X] No se pudo preparar el entorno. Vuelve a abrir probar.command"
+    echo "  [X] No se pudo preparar el entorno. Vuelve a abrir 1-Empezar-aqui.command"
     read -r -p "  Presiona ENTER para cerrar... "
     exit 1
 }
@@ -27,7 +27,7 @@ source .venv/bin/activate || {
 if ! python -c "import ragnar_agent" >/dev/null 2>&1; then
     python -m pip install --quiet -e . --no-deps >/dev/null 2>&1
     if ! python -c "import ragnar_agent" >/dev/null 2>&1; then
-        echo "  [X] Falta instalar el programa. Vuelve a abrir probar.command"
+        echo "  [X] Falta instalar el programa. Vuelve a abrir 1-Empezar-aqui.command"
         read -r -p "  Presiona ENTER para cerrar... "
         exit 1
     fi

@@ -55,6 +55,6 @@ chmod +x ./*.command ./*.sh 2>/dev/null
 echo
 echo "  Actualizado correctamente."
 echo
-echo "  Ahora abre  probar.command  para dejar todo listo."
+echo "  Ahora abre  1-Empezar-aqui.command  para dejar todo listo."
 echo
 read -r -p "  Presiona ENTER para cerrar... "

@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-cd /d "%~dp0"
+cd /d "%~dp0.."
 title Grabacion de la demo - Ragnar Capital
 mode con: cols=100 lines=32
 

@@ -12,7 +12,7 @@ echo
 echo "  ATENCION: esto SI le responde a tus clientes de verdad."
 echo
 echo "  Antes de seguir, asegurate de que:"
-echo "    - Ya revisaste las respuestas con  revisar-bandeja.command"
+echo "    - Ya revisaste las respuestas con  5-Revisar-bandeja.command"
 echo "    - Estas de acuerdo con el tono y las cotizaciones"
 echo
 echo "  Mientras esto este abierto, el bot revisa tu bandeja cada 45"

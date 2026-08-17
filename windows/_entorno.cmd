@@ -2,7 +2,7 @@
 REM ---------------------------------------------------------------------
 REM  Prepara el entorno. No se ejecuta solo: lo llaman los demas .cmd.
 REM ---------------------------------------------------------------------
-cd /d "%~dp0"
+cd /d "%~dp0.."
 
 if not exist ".venv\Scripts\activate.bat" (
     echo.
