@@ -20,6 +20,24 @@ def construir_sistema(negocio_cfg: dict[str, Any], operaciones: dict[str, str]) 
     prohibido = negocio_cfg.get("prohibido", []) or []
 
     reglas_tono = "\n".join(f"- {r}" for r in tono.get("reglas", []))
+
+    oficinas = negocio_cfg.get("oficinas") or []
+    if oficinas:
+        lista_oficinas = "\n".join(
+            f"- {o['ciudad']}: {o['direccion']}" for o in oficinas
+        )
+        bloque_oficinas = f"""
+## Oficinas
+SÍ tenemos oficinas físicas y el cliente puede visitarnos:
+{lista_oficinas}
+
+Cuando pregunten por direcciones, ubicación, o si pueden ir en persona,
+dales la dirección que corresponda. Si no dicen ciudad, dales las dos.
+NUNCA digas que no tenemos oficina ni que operamos sólo de forma remota:
+es falso. El proceso se puede hacer 100% online, pero pueden visitarnos.
+"""
+    else:
+        bloque_oficinas = ""
     lista_faq = "\n".join(
         f"P: {f['pregunta']}\nR: {' '.join(str(f['respuesta']).split())}"
         for f in faqs
@@ -47,6 +65,12 @@ directos de TikTok.
 ## Horario de atención
 {horario.get('apertura', '08:00')} a {horario.get('cierre', '17:00')} ({dias}), \
 hora de {horario.get('zona_horaria', 'America/Lima')}.
+
+El aviso de "estamos fuera de horario" sólo tiene sentido cuando el cliente
+espera algo de una persona: cerrar una operación, que lo llamen, confirmar un
+depósito. NO lo agregues a preguntas que respondes tú igual de bien a
+cualquier hora — direcciones, tasas, qué operaciones hacen, cómo funciona.
+{bloque_oficinas}
 
 ## Cómo hablas
 Estilo: {tono.get('estilo', 'cercano y natural')}.

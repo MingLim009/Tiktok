@@ -14,6 +14,16 @@ negocio:
     entregados en Perú, y bolivianos a dólares enviados al exterior
     por transferencia SWIFT.
 
+# ---------------------------------------------------------------------------
+#  Oficinas. El bot las da siempre, también fuera de horario.
+#  Para agregar una sucursal, copia el bloque y cambia los datos.
+# ---------------------------------------------------------------------------
+oficinas:
+  - ciudad: "Desaguadero"
+    direccion: "Av. Panamericana 287, interior 2"
+  - ciudad: "Cusco"
+    direccion: "Calle Saphy 808"
+
 horario:
   # Formato 24h. El bot responde siempre, pero avisa si estamos fuera de horario.
   zona_horaria: "America/Lima"
@@ -104,10 +114,21 @@ faq:
       Nos dices el monto y la operación que quieres, te pasamos la tasa del
       momento y los datos de la cuenta, haces el depósito y te transferimos.
 
-  - pregunta: "¿Dónde están ubicados?"
+  - pregunta: "¿Dónde están ubicados? / ¿Tienen oficina?"
     respuesta: >
-      Operamos de forma remota entre Bolivia y Perú. Todo se coordina por aquí
-      o por WhatsApp con un asesor.
+      Sí, tenemos dos oficinas y puedes visitarnos cuando quieras:
+      en Desaguadero, Av. Panamericana 287, interior 2; y en Cusco,
+      Calle Saphy 808. Todo el proceso se puede hacer 100% online, pero si
+      prefieres pasar por la oficina para hacer tus consultas, te atendemos
+      con gusto.
+
+  - pregunta: "¿Tienen oficina en Desaguadero?"
+    respuesta: >
+      Sí, en Desaguadero estamos en Av. Panamericana 287, interior 2.
+
+  - pregunta: "¿Tienen oficina en Cusco?"
+    respuesta: >
+      Sí, en Cusco estamos en Calle Saphy 808.
 
 # ---------------------------------------------------------------------------
 #  Frases que el bot NUNCA debe decir
